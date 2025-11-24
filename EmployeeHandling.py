@@ -52,15 +52,18 @@ def add_employee():
                     print("Error! Employee designation cannot contain digits.")
                     designation = input("Enter employee designation: ")
                     break
-
-            salary = float(input("Enter employee salary: "))
-            if salary <= 0:
+            salary_input = input("Enter employee salary: ")
+            if salary_input.isdigit():
+                print("Salary must be numeric")
+                salary = float(input("Enter employee salary: "))
+            elif float(salary_input) <= 0:
                 print("Error! Employee salary must be greater than zero.")
                 salary = float(input("Enter employee salary: "))
-            elif salary.isalpha():
+            elif salary_input.isalpha():
                 print("Error! Employee salary cannot be alphabetic.")
                 salary = float(input("Enter employee salary: "))
-
+            else:
+                salary = float(salary_input)
             employee = {
                 "ID": id ,
                 "Name": name,
