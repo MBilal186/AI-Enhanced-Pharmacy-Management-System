@@ -1,305 +1,272 @@
-{
- "cells": [
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "47415399-c514-491a-bc4f-3724bad2af7e",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "import csv\n",
-    "from filehandler import read_csv, write_csv\n",
-    "\n",
-    "Customer_File = \"customers.csv\"\n",
-    "\n",
-    "def load_customers():\n",
-    "    return read_csv(Customer_File)\n",
-    "\n",
-    "def save_customers(data):\n",
-    "    write_csv(Customer_File, data)\n",
-    "\n",
-    "def add_customer():\n",
-    "    customers = load_customers()\n",
-    "\n",
-    "    num_customers = input(\"Enter number of customers to add: \")\n",
-    "    while not num_customers.isdigit() or int(num_customers) <= 0:\n",
-    "        print(\"Error! Number must be a positive integer.\")\n",
-    "        num_customers = input(\"Enter number of customers to add: \")\n",
-    "\n",
-    "    num_customers = int(num_customers)\n",
-    "\n",
-    "    for i in range(1, num_customers + 1):\n",
-    "        print(f\"\\nEnter details for customer {i}\")\n",
-    "\n",
-    "        # Customer ID\n",
-    "        while True:\n",
-    "            cid = input(\"Enter customer ID: \")\n",
-    "            if not cid.isdigit() or int(cid) <= 0:\n",
-    "                print(\"Error! Customer ID must be numeric and greater than zero.\")\n",
-    "                continue\n",
-    "\n",
-    "            cid = int(cid)\n",
-    "            exists = False\n",
-    "            for c in customers:\n",
-    "                if c[\"ID\"] == cid:\n",
-    "                    exists = True\n",
-    "                    break\n",
-    "            if exists:\n",
-    "                print(\"Error! Customer with this ID already exists.\")\n",
-    "            else:\n",
-    "                break\n",
-    "\n",
-    "        \n",
-    "        while True:\n",
-    "            name = input(\"Enter customer name: \")\n",
-    "            if name.strip() == \"\":\n",
-    "                print(\"Error! Name cannot be empty.\")\n",
-    "            elif name.isdigit():\n",
-    "                print(\"Error! Name cannot be numbers.\")\n",
-    "            elif name[0].islower():\n",
-    "                print(\"Error! Name must start with uppercase.\")\n",
-    "            else:\n",
-    "                valid = True\n",
-    "                for ch in name:\n",
-    "                    if ch.isdigit():\n",
-    "                        valid = False\n",
-    "                        print(\"Error! Name cannot contain digits.\")\n",
-    "                        break\n",
-    "                if valid:\n",
-    "                    break\n",
-    "\n",
-    "       \n",
-    "        while True:\n",
-    "            contact = input(\"Enter customer phone number: \")\n",
-    "            if not contact.isdigit():\n",
-    "                print(\"Error! Contact number must be numeric.\")\n",
-    "            elif len(contact) < 10:\n",
-    "                print(\"Error! Contact must contain at least 10 digits.\")\n",
-    "            else:\n",
-    "                break\n",
-    "\n",
-    "      \n",
-    "        while True:\n",
-    "            address = input(\"Enter customer address: \")\n",
-    "            if address.strip() == \"\":\n",
-    "                print(\"Error! Address cannot be empty.\")\n",
-    "            else:\n",
-    "                break\n",
-    "\n",
-    "        customer = {\n",
-    "            \"ID\": cid,\n",
-    "            \"Name\": name,\n",
-    "            \"Contact\": contact,\n",
-    "            \"Address\": address\n",
-    "        }\n",
-    "\n",
-    "        customers.append(customer)\n",
-    "        print(\"Customer added successfully!\\n\")\n",
-    "\n",
-    "    save_customers(customers)\n",
-    "\n",
-    "\n",
-    "def update_customer():\n",
-    "    customers = load_customers()\n",
-    "\n",
-    "    while True:\n",
-    "        cid = input(\"Enter the customer ID to update: \")\n",
-    "        if not cid.isdigit() or int(cid) <= 0:\n",
-    "            print(\"Error! Customer ID must be numeric and greater than zero.\")\n",
-    "        else:\n",
-    "            cid = int(cid)\n",
-    "            break\n",
-    "\n",
-    "    for c in customers:\n",
-    "        if c[\"ID\"] == cid:\n",
-    "            print(\"\\nCurrent customer details:\")\n",
-    "            for key, val in c.items():\n",
-    "                print(f\"{key}: {val}\")\n",
-    "\n",
-    "            field = input(\"\\nWhat do you want to update (ID/Name/Contact/Address): \")\n",
-    "\n",
-    "         \n",
-    "            if field == \"ID\":\n",
-    "                while True:\n",
-    "                    new_id = input(\"Enter new ID: \")\n",
-    "                    if not new_id.isdigit() or int(new_id) <= 0:\n",
-    "                        print(\"Error! ID must be numeric and greater than zero.\")\n",
-    "                    else:\n",
-    "                        new_id = int(new_id)\n",
-    "                        exists = False\n",
-    "                        for cc in customers:\n",
-    "                            if cc[\"ID\"] == new_id:\n",
-    "                                exists = True\n",
-    "                                break\n",
-    "                        if exists:\n",
-    "                            print(\"Error! Another customer with this ID already exists.\")\n",
-    "                        else:\n",
-    "                            c[\"ID\"] = new_id\n",
-    "                            print(\"Customer ID updated successfully!\")\n",
-    "                            break\n",
-    "\n",
-    "   \n",
-    "            elif field == \"Name\":\n",
-    "                while True:\n",
-    "                    new_name = input(\"Enter new name: \")\n",
-    "                    if new_name.strip() == \"\":\n",
-    "                        print(\"Error! Name cannot be empty.\")\n",
-    "                    elif new_name.isdigit():\n",
-    "                        print(\"Error! Name cannot be digits.\")\n",
-    "                    elif new_name[0].islower():\n",
-    "                        print(\"Error! Name must start uppercase.\")\n",
-    "                    else:\n",
-    "                        valid = True\n",
-    "                        for ch in new_name:\n",
-    "                            if ch.isdigit():\n",
-    "                                print(\"Error! Name cannot contain digits.\")\n",
-    "                                valid = False\n",
-    "                                break\n",
-    "                        if valid:\n",
-    "                            c[\"Name\"] = new_name\n",
-    "                            print(\"Name updated successfully!\")\n",
-    "                            break\n",
-    "\n",
-    "         \n",
-    "            elif field == \"Contact\":\n",
-    "                while True:\n",
-    "                    new_contact = input(\"Enter new contact: \")\n",
-    "                    if not new_contact.isdigit():\n",
-    "                        print(\"Error! Contact must be numeric.\")\n",
-    "                    elif len(new_contact) < 10:\n",
-    "                        print(\"Error! Contact must contain at least 10 digits.\")\n",
-    "                    else:\n",
-    "                        c[\"Contact\"] = new_contact\n",
-    "                        print(\"Contact updated successfully!\")\n",
-    "                        break\n",
-    "\n",
-    "            elif field == \"Address\":\n",
-    "                while True:\n",
-    "                    new_addr = input(\"Enter new address: \")\n",
-    "                    if new_addr.strip() == \"\":\n",
-    "                        print(\"Error! Address cannot be empty.\")\n",
-    "                    else:\n",
-    "                        c[\"Address\"] = new_addr\n",
-    "                        print(\"Address updated successfully!\")\n",
-    "                        break\n",
-    "\n",
-    "            else:\n",
-    "                print(\"Invalid update field!\")\n",
-    "                return\n",
-    "\n",
-    "            save_customers(customers)\n",
-    "            print(\"\\nCustomer updated successfully!\")\n",
-    "            return\n",
-    "\n",
-    "    print(\"Customer not found!\")\n",
-    "\n",
-    "\n",
-    "def delete_customer():\n",
-    "    customers = load_customers()\n",
-    "\n",
-    "    while True:\n",
-    "        cid = input(\"Enter the customer ID to delete: \")\n",
-    "        if not cid.isdigit() or int(cid) <= 0:\n",
-    "            print(\"Error! Customer ID must be numeric and positive.\")\n",
-    "        else:\n",
-    "            cid = int(cid)\n",
-    "            break\n",
-    "\n",
-    "    for c in customers:\n",
-    "        if c[\"ID\"] == cid:\n",
-    "            customers.remove(c)\n",
-    "            save_customers(customers)\n",
-    "            print(\"Customer deleted successfully!\\n\")\n",
-    "            return\n",
-    "\n",
-    "    print(\"Customer not found!\\n\")\n",
-    "\n",
-    "\n",
-    "def view_customers():\n",
-    "    customers = load_customers()\n",
-    "    if not customers:\n",
-    "        print(\"\\nNo customer records found!\\n\")\n",
-    "        return\n",
-    "\n",
-    "    print(\"\\nCustomer Records:\")\n",
-    "    for c in customers:\n",
-    "        for key, val in c.items():\n",
-    "            print(f\"{key}: {val}\")\n",
-    "        print(\"---------------------------\")\n",
-    "\n",
-    "\n",
-    "def search_customer():\n",
-    "    customers = load_customers()\n",
-    "\n",
-    "    print(\"\\nSearch Customer Options:\")\n",
-    "    print(\"1. Search by ID\")\n",
-    "    print(\"2. Search by Name\")\n",
-    "    print(\"3. Search by Contact\")\n",
-    "\n",
-    "    choice = input(\"Enter your choice: \")\n",
-    "\n",
-    " \n",
-    "    if choice == \"1\":\n",
-    "        sid = input(\"Enter customer ID: \")\n",
-    "        if not sid.isdigit():\n",
-    "            print(\"Invalid ID format.\")\n",
-    "            return\n",
-    "        sid = int(sid)\n",
-    "\n",
-    "        found = False\n",
-    "        for c in customers:\n",
-    "            if c[\"ID\"] == sid:\n",
-    "                print(c)\n",
-    "                found = True\n",
-    "        if not found:\n",
-    "            print(\"Customer not found.\")\n",
-    "\n",
-    "\n",
-    "    elif choice == \"2\":\n",
-    "        sname = input(\"Enter customer name: \")\n",
-    "        found = False\n",
-    "        for c in customers:\n",
-    "            if c[\"Name\"].lower() == sname.lower():\n",
-    "                print(c)\n",
-    "                found = True\n",
-    "        if not found:\n",
-    "            print(\"Customer not found.\")\n",
-    "\n",
-    "    \n",
-    "    elif choice == \"3\":\n",
-    "        scontact = input(\"Enter contact number: \")\n",
-    "        found = False\n",
-    "        for c in customers:\n",
-    "            if c[\"Contact\"] == scontact:\n",
-    "                print(c)\n",
-    "                found = True\n",
-    "        if not found:\n",
-    "            print(\"Customer not found.\")\n",
-    "\n",
-    "    else:\n",
-    "        print(\"Invalid choice!\")\n"
-   ]
-  }
- ],
- "metadata": {
-  "kernelspec": {
-   "display_name": "Python 3 (ipykernel)",
-   "language": "python",
-   "name": "python3"
-  },
-  "language_info": {
-   "codemirror_mode": {
-    "name": "ipython",
-    "version": 3
-   },
-   "file_extension": ".py",
-   "mimetype": "text/x-python",
-   "name": "python",
-   "nbconvert_exporter": "python",
-   "pygments_lexer": "ipython3",
-   "version": "3.13.5"
-  }
- },
- "nbformat": 4,
- "nbformat_minor": 5
-}
+import csv
+from filehandler import read_csv, write_csv
+
+Customer_File = "customers.csv"
+
+def load_customers():
+    return read_csv(Customer_File)
+
+def save_customers(data):
+    write_csv(Customer_File, data)
+
+def add_customer():
+    customers = load_customers()
+
+    num_customers = input("Enter number of customers to add: ")
+    while not num_customers.isdigit() or int(num_customers) <= 0:
+        print("Error! Number must be a positive integer.")
+        num_customers = input("Enter number of customers to add: ")
+
+    num_customers = int(num_customers)
+
+    for i in range(1, num_customers + 1):
+        print(f"\nEnter details for customer {i}")
+
+        # Customer ID
+        while True:
+            cid = input("Enter customer ID: ")
+            if not cid.isdigit() or int(cid) <= 0:
+                print("Error! Customer ID must be numeric and greater than zero.")
+                continue
+
+            cid = int(cid)
+            exists = False
+            for c in customers:
+                if c["ID"] == cid:
+                    exists = True
+                    break
+            if exists:
+                print("Error! Customer with this ID already exists.")
+            else:
+                break
+
+        # Customer Name
+        while True:
+            name = input("Enter customer name: ")
+            if name.strip() == "":
+                print("Error! Name cannot be empty.")
+            elif name.isdigit():
+                print("Error! Name cannot be numbers.")
+            elif name[0].islower():
+                print("Error! Name must start with uppercase.")
+            else:
+                valid = True
+                for ch in name:
+                    if ch.isdigit():
+                        valid = False
+                        print("Error! Name cannot contain digits.")
+                        break
+                if valid:
+                    break
+
+        # Contact Number
+        while True:
+            contact = input("Enter customer phone number: ")
+            if not contact.isdigit():
+                print("Error! Contact number must be numeric.")
+            elif len(contact) < 10:
+                print("Error! Contact must contain at least 10 digits.")
+            else:
+                break
+
+        # Address
+        while True:
+            address = input("Enter customer address: ")
+            if address.strip() == "":
+                print("Error! Address cannot be empty.")
+            else:
+                break
+
+        customer = {
+            "ID": cid,
+            "Name": name,
+            "Contact": contact,
+            "Address": address
+        }
+
+        customers.append(customer)
+        print("Customer added successfully!\n")
+
+    save_customers(customers)
+
+
+def update_customer():
+    customers = load_customers()
+
+    while True:
+        cid = input("Enter the customer ID to update: ")
+        if not cid.isdigit() or int(cid) <= 0:
+            print("Error! Customer ID must be numeric and greater than zero.")
+        else:
+            cid = int(cid)
+            break
+
+    for c in customers:
+        if c["ID"] == cid:
+            print("\nCurrent customer details:")
+            for key, val in c.items():
+                print(f"{key}: {val}")
+
+            field = input("\nWhat do you want to update (ID/Name/Contact/Address): ")
+
+            # Update ID
+            if field == "ID":
+                while True:
+                    new_id = input("Enter new ID: ")
+                    if not new_id.isdigit() or int(new_id) <= 0:
+                        print("Error! ID must be numeric and greater than zero.")
+                    else:
+                        new_id = int(new_id)
+                        exists = False
+                        for cc in customers:
+                            if cc["ID"] == new_id:
+                                exists = True
+                                break
+                        if exists:
+                            print("Error! Another customer with this ID already exists.")
+                        else:
+                            c["ID"] = new_id
+                            print("Customer ID updated successfully!")
+                            break
+
+            # Update Name
+            elif field == "Name":
+                while True:
+                    new_name = input("Enter new name: ")
+                    if new_name.strip() == "":
+                        print("Error! Name cannot be empty.")
+                    elif new_name.isdigit():
+                        print("Error! Name cannot be digits.")
+                    elif new_name[0].islower():
+                        print("Error! Name must start uppercase.")
+                    else:
+                        valid = True
+                        for ch in new_name:
+                            if ch.isdigit():
+                                print("Error! Name cannot contain digits.")
+                                valid = False
+                                break
+                        if valid:
+                            c["Name"] = new_name
+                            print("Name updated successfully!")
+                            break
+
+            # Update Contact
+            elif field == "Contact":
+                while True:
+                    new_contact = input("Enter new contact: ")
+                    if not new_contact.isdigit():
+                        print("Error! Contact must be numeric.")
+                    elif len(new_contact) < 10:
+                        print("Error! Contact must contain at least 10 digits.")
+                    else:
+                        c["Contact"] = new_contact
+                        print("Contact updated successfully!")
+                        break
+
+            # Update Address
+            elif field == "Address":
+                while True:
+                    new_addr = input("Enter new address: ")
+                    if new_addr.strip() == "":
+                        print("Error! Address cannot be empty.")
+                    else:
+                        c["Address"] = new_addr
+                        print("Address updated successfully!")
+                        break
+
+            else:
+                print("Invalid update field!")
+                return
+
+            save_customers(customers)
+            print("\nCustomer updated successfully!")
+            return
+
+    print("Customer not found!")
+
+
+def delete_customer():
+    customers = load_customers()
+
+    while True:
+        cid = input("Enter the customer ID to delete: ")
+        if not cid.isdigit() or int(cid) <= 0:
+            print("Error! Customer ID must be numeric and positive.")
+        else:
+            cid = int(cid)
+            break
+
+    for c in customers:
+        if c["ID"] == cid:
+            customers.remove(c)
+            save_customers(customers)
+            print("Customer deleted successfully!\n")
+            return
+
+    print("Customer not found!\n")
+
+
+def view_customers():
+    customers = load_customers()
+    if not customers:
+        print("\nNo customer records found!\n")
+        return
+
+    print("\nCustomer Records:")
+    for c in customers:
+        for key, val in c.items():
+            print(f"{key}: {val}")
+        print("---------------------------")
+
+
+def search_customer():
+    customers = load_customers()
+
+    print("\nSearch Customer Options:")
+    print("1. Search by ID")
+    print("2. Search by Name")
+    print("3. Search by Contact")
+
+    choice = input("Enter your choice: ")
+
+    # Search by ID
+    if choice == "1":
+        sid = input("Enter customer ID: ")
+        if not sid.isdigit():
+            print("Invalid ID format.")
+            return
+        sid = int(sid)
+
+        found = False
+        for c in customers:
+            if c["ID"] == sid:
+                print(c)
+                found = True
+        if not found:
+            print("Customer not found.")
+
+    # Search by Name
+    elif choice == "2":
+        sname = input("Enter customer name: ")
+        found = False
+        for c in customers:
+            if c["Name"].lower() == sname.lower():
+                print(c)
+                found = True
+        if not found:
+            print("Customer not found.")
+
+    # Search by Contact
+    elif choice == "3":
+        scontact = input("Enter contact number: ")
+        found = False
+        for c in customers:
+            if c["Contact"] == scontact:
+                print(c)
+                found = True
+        if not found:
+            print("Customer not found.")
+
+    else:
+        print("Invalid choice!")
