@@ -1,7 +1,5 @@
 from customer import add_customer, view_customers, delete_customer, search_customer, generate_bill, apply_discount
-
 while True:
-    print("\n========= CUSTOMER MANAGEMENT SYSTEM =========")
     print("1. Add Customer")
     print("2. View All Customers")
     print("3. Delete Customer")
@@ -9,9 +7,7 @@ while True:
     print("5. Generate Bill")
     print("6. Apply Discount")
     print("7. Exit")
-
     choice = input("Enter your choice: ")
-
     if choice == "1":
         add_customer()
     elif choice == "2":
