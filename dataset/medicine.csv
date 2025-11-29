@@ -1,0 +1,51 @@
+ID,NAME,PRICE (PKR),QUANTITY,EXPIRY
+M001,Paracetamol 500mg,150,500,2026-08-15
+M002,Amoxicillin 250mg,480,200,2027-03-01
+M003,Cetirizine 10mg,90,1000,2026-11-20
+M004,Multivitamin Tablet,750,300,2027-06-10
+M005,Insulin Pen NovoMix,3500,50,2026-02-28
+M006,Omeprazole 20mg,210,750,2026-05-01
+M007,Amlodipine 5mg,320,400,2027-01-25
+M008,Atorvastatin 10mg,650,150,2026-10-05
+M009,Metformin 500mg,180,600,2027-04-18
+M010,Clopidogrel 75mg,890,120,2026-09-22
+M011,Sertraline 50mg,1100,80,2027-07-07
+M012,Lisinopril 10mg,410,250,2026-12-19
+M013,Ibuprofen 400mg,250,900,2027-02-14
+M014,Doxycycline 100mg,520,350,2026-06-30
+M015,Folic Acid 5mg,120,1500,2027-05-12
+M016,Ranitidine 150mg,290,550,2026-03-29
+M017,Azithromycin 500mg,720,180,2027-09-03
+M018,Hydrochlorothiazide 25mg,350,280,2026-04-08
+M019,Warfarin 5mg,950,100,2027-08-01
+M020,Levothyroxine 50mcg,580,220,2026-11-11
+M021,Prednisolone 5mg,310,450,2027-01-05
+M022,Gliclazide 80mg,470,380,2026-10-25
+M023,Tramadol 50mg,620,210,2027-04-01
+M024,Fluoxetine 20mg,1300,60,2026-09-15
+M025,Vitamin C Chewable,280,800,2027-03-20
+M026,Cough Syrup Dextro,400,320,2026-07-11
+M027,Antacid Suspension,190,480,2027-01-01
+M028,Eye Drops Allergy,550,140,2026-12-05
+M029,Betamethasone Cream,380,270,2027-02-28
+M030,Oral Rehydration Salts,100,1200,2026-08-08
+M031,Ciprofloxacin 500mg,610,230,2027-05-20
+M032,Losartan 50mg,790,160,2026-06-15
+M033,Gabapentin 300mg,920,90,2027-10-01
+M034,Diphenhydramine 25mg,170,1100,2026-11-03
+M035,Montelukast 10mg,840,130,2027-04-25
+M036,Naproxen 500mg,330,650,2026-05-18
+M037,Ondansetron 4mg,590,170,2027-09-10
+M038,Propranolol 40mg,260,700,2026-03-05
+M039,Tamsulosin 0.4mg,1250,40,2027-08-18
+M040,Zinc Sulfate 20mg,140,1300,2026-12-30
+M041,Rivaroxaban 10mg,1500,30,2027-01-15
+M042,Enalapril 5mg,300,580,2026-10-10
+M043,Finasteride 5mg,1800,20,2027-03-08
+M044,Allopurinol 100mg,430,370,2026-07-22
+M045,Bisoprolol 5mg,510,240,2027-06-01
+M046,Ferrous Sulfate 325mg,220,850,2026-04-12
+M047,Haloperidol 5mg,780,110,2027-11-28
+M048,Loperamide 2mg,160,950,2026-09-01
+M049,Codeine Phosphate 30mg,990,70,2027-02-01
+M050,Nifedipine 30mg,680,190,2026-08-20
