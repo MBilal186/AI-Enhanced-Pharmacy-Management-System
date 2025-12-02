@@ -2,8 +2,12 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget
+from PyQt6.QtWidgets import (
+    QApplication, QMainWindow, QTabWidget,
+    QWidget, QHBoxLayout, QVBoxLayout, QPushButton
+)
 from ui.medicine_ui import MedicineTab
+from ui.sales_ui import SalesHistoryTab
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -20,14 +24,12 @@ class MainWindow(QMainWindow):
                 font-family: 'Segoe UI';
             }
 
-            /* TAB BACKGROUND */
             QTabWidget::pane {
                 border: 1px solid #cccccc;
                 background: #ffffff;
                 padding: 8px;
             }
 
-            /* NORMAL TAB */
             QTabBar::tab {
                 background: #e0e0e0;
                 color: #333333;
@@ -37,13 +39,11 @@ class MainWindow(QMainWindow):
                 font-weight: 500;
             }
 
-            /* HOVER TAB */
             QTabBar::tab:hover {
                 background: #d0d0d0;
                 color: #000000;
             }
 
-            /* SELECTED TAB */
             QTabBar::tab:selected {
                 background: #ffffff;
                 color: #0078d7;
@@ -85,10 +85,67 @@ class MainWindow(QMainWindow):
             }
         """)
 
-        tabs = QTabWidget()
-        self.setCentralWidget(tabs)
+        # ---- MAIN LAYOUT FOR SIDEBAR + TABS ----
+        container = QWidget()
+        main_layout = QHBoxLayout(container)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
 
-        tabs.addTab(MedicineTab(), "Medicines")
+        # -------------------------
+        # SIDEBAR
+        # -------------------------
+        sidebar = QWidget()
+        sidebar.setFixedWidth(200)
+        sidebar.setStyleSheet("""
+            background-color: #2C3E50;
+            color: white;
+        """)
+
+        sidebar_layout = QVBoxLayout(sidebar)
+        sidebar_layout.setContentsMargins(15, 20, 15, 20)
+        sidebar_layout.setSpacing(18)
+
+        btn_dashboard = QPushButton("📊 Dashboard")
+        btn_medicine = QPushButton("💊 Medicines")
+        btn_sales = QPushButton("💸 Sales History")
+        btn_settings = QPushButton("⚙️ Settings")
+
+        for btn in [btn_dashboard, btn_medicine, btn_sales, btn_settings]:
+            btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #34495E;
+                    color: white;
+                    padding: 10px;
+                    border-radius: 8px;
+                    text-align: left;
+                }
+                QPushButton:hover {
+                    background-color: #3d566e;
+                }
+            """)
+            sidebar_layout.addWidget(btn)
+
+        sidebar_layout.addStretch()
+
+        # -------------------------
+        # TABS AREA
+        # -------------------------
+        self.tabs = QTabWidget()
+        self.tabs.addTab(MedicineTab(), "Medicines")
+        self.tabs.addTab(SalesHistoryTab(), "Sales History")
+
+        # Connect sidebar buttons → tab index
+        btn_medicine.clicked.connect(lambda: self.tabs.setCurrentIndex(0))
+        btn_sales.clicked.connect(lambda: self.tabs.setCurrentIndex(1))
+
+        # (Dashboard & Settings will be added later)
+
+        # Add sidebar + tabs to layout
+        main_layout.addWidget(sidebar)
+        main_layout.addWidget(self.tabs)
+
+        self.setCentralWidget(container)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
