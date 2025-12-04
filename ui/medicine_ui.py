@@ -8,9 +8,28 @@ from Medicine.medicine_functions import load_medicines, save_medicines
 from utils.filehandler import read_csv, write_csv
 from datetime import datetime
 import os
+from functools import wraps
 
-SALES_FILE = "dataset/sales.csv"  # will be created if missing
+# -------------------- GLOBAL ROLE VARIABLE --------------------
+current_user_role = None  # Will be set after login
 
+# -------------------- ROLE DECORATOR --------------------
+def require_role(allowed_roles):
+    """
+    Decorator to restrict access based on roles.
+    Usage: @require_role(["Admin"]) or @require_role(["Admin", "Employee"])
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            if current_user_role not in allowed_roles:
+                QMessageBox.warning(None, "Access Denied", f"Your role ({current_user_role}) cannot perform this action.")
+                return
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+# -------------------- MEDICINE TAB --------------------
 class MedicineTab(QWidget):
     def __init__(self):
         super().__init__()
@@ -31,7 +50,6 @@ class MedicineTab(QWidget):
         search_layout.addWidget(self.search_input)
         search_layout.addWidget(search_btn)
         search_layout.addWidget(refresh_btn)
-
         layout.addLayout(search_layout)
 
         # --- Table ---
@@ -44,212 +62,218 @@ class MedicineTab(QWidget):
 
         # --- Buttons ---
         btn_layout = QHBoxLayout()
-        add_btn = QPushButton("Add")
-        add_btn.clicked.connect(self.add_medicine_ui)
-        update_btn = QPushButton("Update")
-        update_btn.clicked.connect(self.update_medicine_ui)
-        delete_btn = QPushButton("Delete")
-        delete_btn.clicked.connect(self.delete_medicine_ui)
-        sell_btn = QPushButton("Sell")                # <-- SELL button
-        sell_btn.clicked.connect(self.sell_medicine_ui)
+        self.add_btn = QPushButton("Add")
+        self.add_btn.clicked.connect(self.add_medicine_ui)
+        self.update_btn = QPushButton("Update")
+        self.update_btn.clicked.connect(self.update_medicine_ui)
+        self.delete_btn = QPushButton("Delete")
+        self.delete_btn.clicked.connect(self.delete_medicine_ui)
+        self.sell_btn = QPushButton("Sell")
+        self.sell_btn.clicked.connect(self.sell_medicine_ui)
 
-        btn_layout.addWidget(add_btn)
-        btn_layout.addWidget(update_btn)
-        btn_layout.addWidget(delete_btn)
-        btn_layout.addWidget(sell_btn)
+        btn_layout.addWidget(self.add_btn)
+        btn_layout.addWidget(self.update_btn)
+        btn_layout.addWidget(self.delete_btn)
+        btn_layout.addWidget(self.sell_btn)
         layout.addLayout(btn_layout)
 
         self.setLayout(layout)
         self.load_table()
+        self.adjust_ui_for_role()  # Hide buttons based on role
 
+    # -------------------- Role-Based UI --------------------
+    def adjust_ui_for_role(self):
+        if current_user_role == "Customer":
+            self.add_btn.hide()
+            self.update_btn.hide()
+            self.delete_btn.hide()
+            self.sell_btn.hide()
+        elif current_user_role == "Employee":
+            self.delete_btn.hide()  # Employees cannot delete
+
+    # -------------------- Table Load --------------------
     def load_table(self):
         self.table.setRowCount(0)
         self.medicines = load_medicines()
+
+        if self.medicines and self.medicines[0][0].lower() == "id":
+            self.medicines = self.medicines[1:]
+
         for row_idx, row in enumerate(self.medicines):
             self.table.insertRow(row_idx)
-            for col_idx, item in enumerate(row):
-                self.table.setItem(row_idx, col_idx, QTableWidgetItem(str(item)))
+            med_id, name, price, qty, expiry = str(row[0]), str(row[1]), str(row[2]), str(row[3]), str(row[4])
+            for col_idx, val in enumerate([med_id, name, price, qty, expiry]):
+                self.table.setItem(row_idx, col_idx, QTableWidgetItem(val))
 
+            # Highlight expired or low stock
+            expired = False
+            try:
+                exp_date = datetime.strptime(expiry, "%Y-%m-%d")
+                if exp_date < datetime.now():
+                    expired = True
+            except:
+                pass
+
+            for col in range(5):
+                cell = self.table.item(row_idx, col)
+                if expired:
+                    cell.setBackground(Qt.GlobalColor.red)
+                    cell.setForeground(Qt.GlobalColor.white)
+                elif int(qty) < 10:
+                    cell.setBackground(Qt.GlobalColor.yellow)
+                    cell.setForeground(Qt.GlobalColor.black)
+
+        # Alerts
+        low_stock = [m for m in self.medicines if int(m[3]) < 10]
+        expired_list = []
+        for m in self.medicines:
+            try:
+                exp_date = datetime.strptime(m[4], "%Y-%m-%d")
+                if exp_date < datetime.now():
+                    expired_list.append(m)
+            except:
+                pass
+
+        msg = ""
+        if low_stock:
+            msg += f"{len(low_stock)} medicines are LOW in stock!\n"
+        if expired_list:
+            msg += f"{len(expired_list)} medicines are EXPIRED!\n"
+
+        if msg:
+            QMessageBox.warning(self, "Inventory Alerts", msg)
+
+    # -------------------- Search --------------------
     def search_medicine(self):
         keyword = self.search_input.text().lower()
         if not keyword:
             self.load_table()
             return
         self.table.setRowCount(0)
-        for row_idx, row in enumerate(self.medicines):
-            # defensive: ensure row has at least 2 columns (id,name,...)
-            name = str(row[1]) if len(row) > 1 else ""
-            if keyword in name.lower():
-                self.table.insertRow(self.table.rowCount())
+        for row in self.medicines:
+            if keyword in str(row[1]).lower():
+                row_index = self.table.rowCount()
+                self.table.insertRow(row_index)
                 for col_idx, item in enumerate(row):
-                    self.table.setItem(self.table.rowCount()-1, col_idx, QTableWidgetItem(str(item)))
+                    self.table.setItem(row_index, col_idx, QTableWidgetItem(str(item)))
 
-    # --- GUI Input for Add ---
+    # -------------------- Add Medicine --------------------
+    @require_role(["Admin", "Employee"])
     def add_medicine_ui(self):
         data = load_medicines()
-        # Generate new ID (preserve existing format if possible)
-        # If first row is header, ID count should be len(data)-1
         new_id = f"M{len(data)+1:03d}"
         name, ok1 = QInputDialog.getText(self, "Add Medicine", "Name:")
-        if not ok1 or not name.strip():
-            return
+        if not ok1 or not name.strip(): return
         price, ok2 = QInputDialog.getDouble(self, "Add Medicine", "Price:", min=0)
-        if not ok2:
-            return
+        if not ok2: return
         qty, ok3 = QInputDialog.getInt(self, "Add Medicine", "Quantity:", min=0)
-        if not ok3:
-            return
+        if not ok3: return
         exp, ok4 = QInputDialog.getText(self, "Add Medicine", "Expiry (YYYY-MM-DD):")
-        if not ok4 or not exp.strip():
-            return
-
-        new_row = [new_id, name.strip(), str(price), str(qty), exp.strip()]
-        data.append(new_row)
+        if not ok4 or not exp.strip(): return
+        data.append([new_id, name.strip(), str(price), str(qty), exp.strip()])
         save_medicines(data)
         QMessageBox.information(self, "Success", f"Medicine '{name}' added successfully!")
         self.load_table()
 
-    # --- GUI Input for Update ---
+    # -------------------- Update Medicine --------------------
+    @require_role(["Admin", "Employee"])
     def update_medicine_ui(self):
         selected = self.table.currentRow()
         if selected == -1:
             QMessageBox.warning(self, "Warning", "Please select a medicine to update.")
             return
-
         data = load_medicines()
-        # if CSV has header, be careful — this implementation assumes rows match table rows
         row = data[selected]
 
-        name, ok1 = QInputDialog.getText(self, "Update Medicine", f"Name [{row[1]}]:", text=str(row[1]))
-        if ok1 and name.strip():
-            row[1] = name.strip()
-
-        try:
-            current_price = float(row[2])
-        except Exception:
-            current_price = 0.0
-        price, ok2 = QInputDialog.getDouble(self, "Update Medicine", f"Price [{row[2]}]:", value=current_price, min=0)
-        if ok2:
-            row[2] = str(price)
-
-        try:
-            current_qty = int(row[3])
-        except Exception:
-            current_qty = 0
-        qty, ok3 = QInputDialog.getInt(self, "Update Medicine", f"Quantity [{row[3]}]:", value=current_qty, min=0)
-        if ok3:
-            row[3] = str(qty)
-
-        exp, ok4 = QInputDialog.getText(self, "Update Medicine", f"Expiry [{row[4]}]:", text=str(row[4]))
-        if ok4 and exp.strip():
-            row[4] = exp.strip()
-
+        name, ok1 = QInputDialog.getText(self, "Update Medicine", f"Name [{row[1]}]:", text=row[1])
+        if ok1 and name.strip(): row[1] = name.strip()
+        price, ok2 = QInputDialog.getDouble(self, "Update Medicine", f"Price [{row[2]}]:", value=float(row[2]), min=0)
+        if ok2: row[2] = str(price)
+        qty, ok3 = QInputDialog.getInt(self, "Update Medicine", f"Quantity [{row[3]}]:", value=int(row[3]), min=0)
+        if ok3: row[3] = str(qty)
+        exp, ok4 = QInputDialog.getText(self, "Update Medicine", f"Expiry [{row[4]}]:", text=row[4])
+        if ok4 and exp.strip(): row[4] = exp.strip()
         data[selected] = row
         save_medicines(data)
-        QMessageBox.information(self, "Success", f"Medicine '{row[1]}' updated successfully!")
+        QMessageBox.information(self, "Updated", f"Medicine '{row[1]}' updated successfully!")
         self.load_table()
 
-    # --- GUI Input for Delete ---
+    # -------------------- Delete Medicine --------------------
+    @require_role(["Admin"])
     def delete_medicine_ui(self):
         selected = self.table.currentRow()
         if selected == -1:
-            QMessageBox.warning(self, "Warning", "Please select a medicine to delete.")
+            QMessageBox.warning(self, "Warning", "Select a medicine to delete.")
             return
-
         data = load_medicines()
         row = data[selected]
-        confirm = QMessageBox.question(
-            self, "Confirm Delete", f"Are you sure you want to delete '{row[1]}'?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-        )
+        confirm = QMessageBox.question(self, "Confirm Delete", f"Delete '{row[1]}'?",
+                                       QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         if confirm == QMessageBox.StandardButton.Yes:
             data.pop(selected)
             save_medicines(data)
             QMessageBox.information(self, "Deleted", f"Medicine '{row[1]}' deleted successfully!")
             self.load_table()
 
-    # --- SELL / BILLING (NEW FEATURE) ---
+    # -------------------- Sell Medicine --------------------
+    @require_role(["Admin", "Employee"])
     def sell_medicine_ui(self):
         selected = self.table.currentRow()
         if selected == -1:
-            QMessageBox.warning(self, "Warning", "Please select a medicine to sell.")
+            QMessageBox.warning(self, "Warning", "Select a medicine to sell.")
             return
 
         data = load_medicines()
         row = data[selected]
-        med_id = str(row[0])
-        med_name = str(row[1])
-        try:
-            price = float(row[2])
-        except Exception:
-            QMessageBox.warning(self, "Error", "Invalid price stored for this medicine.")
-            return
-        try:
-            available_qty = int(row[3])
-        except Exception:
-            QMessageBox.warning(self, "Error", "Invalid quantity stored for this medicine.")
-            return
+        med_id, med_name, price, available_qty = row[0], row[1], float(row[2]), int(row[3])
 
-        # get customer name
         customer, ok1 = QInputDialog.getText(self, "Customer Name", "Enter customer name:")
-        if not ok1 or not customer.strip():
-            return
-        # get quantity to sell
+        if not ok1 or not customer.strip(): return
+
         qty, ok2 = QInputDialog.getInt(self, "Quantity", f"Enter quantity to sell (Available: {available_qty}):", min=1)
-        if not ok2:
-            return
+        if not ok2: return
         if qty > available_qty:
-            QMessageBox.warning(self, "Stock error", "Not enough stock available.")
+            QMessageBox.warning(self, "Stock Error", "Not enough stock!")
             return
 
         total = round(price * qty, 2)
+        confirm = QMessageBox.question(self, "Confirm Sale",
+                                       f"Sell {qty} x {med_name} @ Rs.{price}\nTotal: Rs.{total}\nTo: {customer}?",
+                                       QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if confirm != QMessageBox.StandardButton.Yes: return
 
-        # confirm sale
-        confirm = QMessageBox.question(
-            self, "Confirm Sale",
-            f"Sell {qty} x {med_name} @ Rs.{price} each\nTotal: Rs.{total}\nTo customer: {customer} ?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-        )
-        if confirm != QMessageBox.StandardButton.Yes:
-            return
-
-        # update stock in data and save
+        # Update stock
         data[selected][3] = str(available_qty - qty)
         save_medicines(data)
         self.load_table()
-
-        # record sale in SALES_FILE (create if not exist)
         self.record_sale(customer, med_name, qty, price, total)
 
-        # show bill in dialog
         bill_text = (
             "====== BILL ======\n"
             f"Customer: {customer}\n"
             f"Medicine: {med_name}\n"
-            f"Quantity: {qty}\n"
-            f"Price per unit: Rs.{price}\n"
-            f"Total Amount: Rs.{total}\n"
+            f"Qty: {qty}\n"
+            f"Price/unit: Rs.{price}\n"
+            f"Total: Rs.{total}\n"
             f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
             "=================="
         )
         QMessageBox.information(self, "Sale Recorded", bill_text)
 
+    # -------------------- Record Sale --------------------
     def record_sale(self, customer, medicine_name, qty, price, total):
-        # ensure dataset folder exists
-        os.makedirs(os.path.dirname(SALES_FILE), exist_ok=True)
-        # try to read existing sales
+        SALES_FILE = "dataset/sales.csv"
+        os.makedirs("dataset", exist_ok=True)
+
         try:
             sales = read_csv(SALES_FILE)
-        except Exception:
+        except:
             sales = []
 
-        # if file empty or first row not header, add header
         if not sales or not (len(sales[0]) and str(sales[0][0]).lower().startswith("sale")):
-            header = ["sale_id", "customer_name", "medicine_name", "quantity", "price", "total", "date"]
-            sales = [header] + sales
+            sales = [["sale_id", "customer_name", "medicine_name", "quantity", "price", "total", "date"]]
 
-        sale_id = len(sales)  # simple incremental id based on rows
+        sale_id = len(sales)
         date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        new_row = [sale_id, customer, medicine_name, qty, price, total, date_str]
-        sales.append(new_row)
+        sales.append([sale_id, customer, medicine_name, qty, price, total, date_str])
         write_csv(SALES_FILE, sales)

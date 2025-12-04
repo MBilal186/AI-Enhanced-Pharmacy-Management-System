@@ -7,8 +7,8 @@ M005,Insulin Pen NovoMix,3500,50,2026-02-28
 M006,Omeprazole 20mg,210,750,2026-05-01
 M007,Amlodipine 5mg,320,400,2027-01-25
 M008,Atorvastatin 10mg,650,150,2026-10-05
-M009,Metformin 500mg,180,600,2027-04-18
-M010,Clopidogrel 75mg,890,120,2026-09-22
+M009,Metformin 500mg,180.0,600,2025-12-2
+M010,Clopidogrel 75mg,890.0,7,2026-09-22
 M011,Sertraline 50mg,1100,80,2027-07-07
 M012,Lisinopril 10mg,410,250,2026-12-19
 M013,Ibuprofen 400mg,250,900,2027-02-14

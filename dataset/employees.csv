@@ -1,1 +1,4 @@
-﻿Id,Name,Designation,Salary
+﻿username,password,role
+admin,admin123,Admin
+employee,emp123,Employee
+customer,cust123,Customer
