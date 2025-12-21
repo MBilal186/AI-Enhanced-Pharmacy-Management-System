@@ -1,65 +1,67 @@
-import csv
+# billing_functions.py
 from datetime import datetime
 from utils.filehandler import read_csv, write_csv
-from Medicine.medicine_functions import reduce_stock, load_medicines
+from Medicine.medicine_functions import load_medicines, reduce_stock
 
-Sales_file = "Customer/sales.csv"
-def view_available_medicines():
-    data = load_medicines()
-    print("\n--- Available Medicines ---")
-    for row in data:
-        print(f"{row[1]} | Price: Rs.{row[2]} | Stock: {row[3]} | Exp: {row[4]}")
-    print()
+SALES_FILE = "dataset/sales.csv"
 
-def buy_medicine():
-    data = load_medicines()
-    customer = input("Enter customer name : ")
-    medicine_name = input("Enter medicine name : ").lower()
-    qty = int(input("Enter Quantity : "))
-    for med in data:
-        if medicine_name in med[1].lower():
-            price = float(med[2])
-            total = price * qty
-            print(f"\nMedicine : {med[1]}")
-            print(f"Price per unit : Rs.{price}")
-            print(f"Total : Rs.{total}") 
 
-            reduce_stock(med[1],qty)
-            save_sale(customer, med[1], qty, price, total)
-            print_bill(customer, med[1], qty, price, total)
-            return
-        
-    print("Medicine not found!")
-            
-def save_sale(customer, medicine_name, qty, price, total):
+def get_available_medicines():
+    """
+    Returns medicine list from CSV
+    """
+    return load_medicines()
+
+
+def calculate_cart_totals(cart_items):
+    """
+    cart_items = [
+        {"id": "1", "name": "Panadol", "qty": 2, "price": 50}
+    ]
+    """
+    subtotal = 0
+    for item in cart_items:
+        subtotal += float(item["price"]) * int(item["qty"])
+    return subtotal
+
+
+def finalize_sale(customer_name, cart_items):
+    """
+    Finalizes ONE bill with multiple medicines
+    """
+    if not cart_items:
+        return False, "Cart is empty"
+
+    # 1Check stock availability FIRST
+    for item in cart_items:
+        success = reduce_stock(item["name"], int(item["qty"]))
+        if not success:
+            return False, f"Not enough stock for {item['name']}"
+
+    # 2️Load existing sales
     try:
-        sales = read_csv(Sales_file)
+        sales = read_csv(SALES_FILE)
     except FileNotFoundError:
-        sales = [["sale_id", "customer_name", "medicine_name", "quantity", "price", "total", "date"]]
+        sales = [
+            ["sale_id", "customer", "medicine", "qty", "price", "total", "date"]
+        ]
 
     sale_id = len(sales)
-    date = datetime.now().strftime("%Y-%m-%d")
+    date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    new_row = [sale_id, customer, medicine_name, qty, price, total, date]
-    sales.append(new_row)
-    write_csv(Sales_file, sales)
-    print("\nSale recorded successfully!")
+    # 3️Save each medicine as part of SAME bill
+    for item in cart_items:
+        total = float(item["price"]) * int(item["qty"])
+        row = [
+            sale_id,
+            customer_name,
+            item["name"],
+            item["qty"],
+            item["price"],
+            total,
+            date
+        ]
+        sales.append(row)
 
-def print_bill(customer, medicine, qty, price, total):
-    print("\n====== BILL ======")
-    print(f"Customer: {customer}")
-    print(f"Medicine: {medicine}")
-    print(f"Quantity: {qty}")
-    print(f"Price per unit: Rs.{price}")
-    print(f"Total Amount: Rs.{total}")
-    print(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print("==========================\n")
-
-def view_sales_history():
-    try:
-        data = read_csv(Sales_file)
-        print("\n--- SALES HISTORY ---")
-        for row in data:
-            print(row)
-    except FileNotFoundError:
-        print("\nNo sales record found.")
+    write_csv(SALES_FILE, sales)
+    return True, sale_id

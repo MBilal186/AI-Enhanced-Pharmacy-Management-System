@@ -4,35 +4,33 @@ from PyQt6.QtWidgets import (
     QPushButton, QLineEdit, QMessageBox, QInputDialog
 )
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QColor, QBrush
 from Medicine.medicine_functions import load_medicines, save_medicines
 from utils.filehandler import read_csv, write_csv
 from datetime import datetime
 import os
-from functools import wraps
-
-# -------------------- GLOBAL ROLE VARIABLE --------------------
-current_user_role = None  # Will be set after login
 
 # -------------------- ROLE DECORATOR --------------------
 def require_role(allowed_roles):
     """
     Decorator to restrict access based on roles.
-    Usage: @require_role(["Admin"]) or @require_role(["Admin", "Employee"])
+    Usage: @require_role(["admin"]) or @require_role(["admin", "employee"])
     """
     def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            if current_user_role not in allowed_roles:
-                QMessageBox.warning(None, "Access Denied", f"Your role ({current_user_role}) cannot perform this action.")
+        def wrapper(self, *args, **kwargs):
+            if not hasattr(self, "role") or self.role not in [r.lower() for r in allowed_roles]:
+                QMessageBox.warning(self, "Access Denied",
+                                    f"Your role ({self.role}) cannot perform this action.")
                 return
-            return func(*args, **kwargs)
+            return func(self, *args, **kwargs)
         return wrapper
     return decorator
 
 # -------------------- MEDICINE TAB --------------------
 class MedicineTab(QWidget):
-    def __init__(self):
+    def __init__(self, role="customer"):  # default role
         super().__init__()
+        self.role = role.lower()
         self.init_ui()
 
     def init_ui(self):
@@ -58,6 +56,25 @@ class MedicineTab(QWidget):
         self.table.setHorizontalHeaderLabels(["ID", "Name", "Price", "Quantity", "Expiry"])
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        self.table.setAlternatingRowColors(True)
+        self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.table.setStyleSheet("""
+            QTableWidget {
+                background-color: #0b1220;
+                color: #e6f7ff;
+                gridline-color: #1f3b57;
+                font-size: 13px;
+                selection-background-color: #0066ff;
+                selection-color: white;
+            }
+            QHeaderView::section {
+                background-color: #001f3b;
+                color: white;
+                padding: 4px;
+                border: 1px solid #1f3b57;
+                font-weight: bold;
+            }
+        """)
         layout.addWidget(self.table)
 
         # --- Buttons ---
@@ -68,13 +85,11 @@ class MedicineTab(QWidget):
         self.update_btn.clicked.connect(self.update_medicine_ui)
         self.delete_btn = QPushButton("Delete")
         self.delete_btn.clicked.connect(self.delete_medicine_ui)
-        self.sell_btn = QPushButton("Sell")
-        self.sell_btn.clicked.connect(self.sell_medicine_ui)
 
+        # Removed old Sell button completely
         btn_layout.addWidget(self.add_btn)
         btn_layout.addWidget(self.update_btn)
         btn_layout.addWidget(self.delete_btn)
-        btn_layout.addWidget(self.sell_btn)
         layout.addLayout(btn_layout)
 
         self.setLayout(layout)
@@ -83,13 +98,12 @@ class MedicineTab(QWidget):
 
     # -------------------- Role-Based UI --------------------
     def adjust_ui_for_role(self):
-        if current_user_role == "Customer":
+        if self.role == "customer":
             self.add_btn.hide()
             self.update_btn.hide()
             self.delete_btn.hide()
-            self.sell_btn.hide()
-        elif current_user_role == "Employee":
-            self.delete_btn.hide()  # Employees cannot delete
+        elif self.role == "employee":
+            self.delete_btn.hide()  # employees cannot delete
 
     # -------------------- Table Load --------------------
     def load_table(self):
@@ -158,8 +172,8 @@ class MedicineTab(QWidget):
                     self.table.setItem(row_index, col_idx, QTableWidgetItem(str(item)))
 
     # -------------------- Add Medicine --------------------
-    @require_role(["Admin", "Employee"])
-    def add_medicine_ui(self):
+    @require_role(["admin", "employee"])
+    def add_medicine_ui(self, checked=False):
         data = load_medicines()
         new_id = f"M{len(data)+1:03d}"
         name, ok1 = QInputDialog.getText(self, "Add Medicine", "Name:")
@@ -176,8 +190,8 @@ class MedicineTab(QWidget):
         self.load_table()
 
     # -------------------- Update Medicine --------------------
-    @require_role(["Admin", "Employee"])
-    def update_medicine_ui(self):
+    @require_role(["admin", "employee"])
+    def update_medicine_ui(self, checked=False):
         selected = self.table.currentRow()
         if selected == -1:
             QMessageBox.warning(self, "Warning", "Please select a medicine to update.")
@@ -199,8 +213,8 @@ class MedicineTab(QWidget):
         self.load_table()
 
     # -------------------- Delete Medicine --------------------
-    @require_role(["Admin"])
-    def delete_medicine_ui(self):
+    @require_role(["admin"])
+    def delete_medicine_ui(self, checked=False):
         selected = self.table.currentRow()
         if selected == -1:
             QMessageBox.warning(self, "Warning", "Select a medicine to delete.")
@@ -214,66 +228,3 @@ class MedicineTab(QWidget):
             save_medicines(data)
             QMessageBox.information(self, "Deleted", f"Medicine '{row[1]}' deleted successfully!")
             self.load_table()
-
-    # -------------------- Sell Medicine --------------------
-    @require_role(["Admin", "Employee"])
-    def sell_medicine_ui(self):
-        selected = self.table.currentRow()
-        if selected == -1:
-            QMessageBox.warning(self, "Warning", "Select a medicine to sell.")
-            return
-
-        data = load_medicines()
-        row = data[selected]
-        med_id, med_name, price, available_qty = row[0], row[1], float(row[2]), int(row[3])
-
-        customer, ok1 = QInputDialog.getText(self, "Customer Name", "Enter customer name:")
-        if not ok1 or not customer.strip(): return
-
-        qty, ok2 = QInputDialog.getInt(self, "Quantity", f"Enter quantity to sell (Available: {available_qty}):", min=1)
-        if not ok2: return
-        if qty > available_qty:
-            QMessageBox.warning(self, "Stock Error", "Not enough stock!")
-            return
-
-        total = round(price * qty, 2)
-        confirm = QMessageBox.question(self, "Confirm Sale",
-                                       f"Sell {qty} x {med_name} @ Rs.{price}\nTotal: Rs.{total}\nTo: {customer}?",
-                                       QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        if confirm != QMessageBox.StandardButton.Yes: return
-
-        # Update stock
-        data[selected][3] = str(available_qty - qty)
-        save_medicines(data)
-        self.load_table()
-        self.record_sale(customer, med_name, qty, price, total)
-
-        bill_text = (
-            "====== BILL ======\n"
-            f"Customer: {customer}\n"
-            f"Medicine: {med_name}\n"
-            f"Qty: {qty}\n"
-            f"Price/unit: Rs.{price}\n"
-            f"Total: Rs.{total}\n"
-            f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-            "=================="
-        )
-        QMessageBox.information(self, "Sale Recorded", bill_text)
-
-    # -------------------- Record Sale --------------------
-    def record_sale(self, customer, medicine_name, qty, price, total):
-        SALES_FILE = "dataset/sales.csv"
-        os.makedirs("dataset", exist_ok=True)
-
-        try:
-            sales = read_csv(SALES_FILE)
-        except:
-            sales = []
-
-        if not sales or not (len(sales[0]) and str(sales[0][0]).lower().startswith("sale")):
-            sales = [["sale_id", "customer_name", "medicine_name", "quantity", "price", "total", "date"]]
-
-        sale_id = len(sales)
-        date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        sales.append([sale_id, customer, medicine_name, qty, price, total, date_str])
-        write_csv(SALES_FILE, sales)

@@ -1,2 +1,7 @@
 sale_id,customer_name,medicine_name,quantity,price,total,date
 1,Muhammad Hassan,Paracetamol 500mg,2,150.0,300.0,2025-12-02 17:51:25
+2,Muhammad Hassan,Omeprazole 20mg,2,210.0,420.0,2025-12-19 17:48:05
+1766223445,Muhammad Bilal,Amoxicillin 250mg,7,480.0,3360.0,2025-12-20
+1766223532,Muhammad Hassan,Allopurinol 100mg,10,430.0,4300.0,2025-12-20
+1766223532,Muhammad Hassan,Enalapril 5mg,5,300.0,1500.0,2025-12-20
+1766312365,Muhammad Hassan,Paracetamol 500mg,2,150.0,300.0,2025-12-21
