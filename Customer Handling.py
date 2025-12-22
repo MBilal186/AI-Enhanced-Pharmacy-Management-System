@@ -22,7 +22,6 @@ def add_customer():
     for i in range(1, num_customers + 1):
         print(f"\nEnter details for customer {i}")
 
-        # Customer ID
         while True:
             cid = input("Enter customer ID: ")
             if not cid.isdigit() or int(cid) <= 0:
@@ -40,7 +39,6 @@ def add_customer():
             else:
                 break
 
-        # Customer Name
         while True:
             name = input("Enter customer name: ")
             if name.strip() == "":
@@ -59,7 +57,6 @@ def add_customer():
                 if valid:
                     break
 
-        # Contact Number
         while True:
             contact = input("Enter customer phone number: ")
             if not contact.isdigit():
@@ -69,7 +66,6 @@ def add_customer():
             else:
                 break
 
-        # Address
         while True:
             address = input("Enter customer address: ")
             if address.strip() == "":
@@ -109,7 +105,6 @@ def update_customer():
 
             field = input("\nWhat do you want to update (ID/Name/Contact/Address): ")
 
-            # Update ID
             if field == "ID":
                 while True:
                     new_id = input("Enter new ID: ")
@@ -129,7 +124,6 @@ def update_customer():
                             print("Customer ID updated successfully!")
                             break
 
-            # Update Name
             elif field == "Name":
                 while True:
                     new_name = input("Enter new name: ")
@@ -151,7 +145,6 @@ def update_customer():
                             print("Name updated successfully!")
                             break
 
-            # Update Contact
             elif field == "Contact":
                 while True:
                     new_contact = input("Enter new contact: ")
@@ -164,7 +157,6 @@ def update_customer():
                         print("Contact updated successfully!")
                         break
 
-            # Update Address
             elif field == "Address":
                 while True:
                     new_addr = input("Enter new address: ")
@@ -230,7 +222,6 @@ def search_customer():
 
     choice = input("Enter your choice: ")
 
-    # Search by ID
     if choice == "1":
         sid = input("Enter customer ID: ")
         if not sid.isdigit():
@@ -246,7 +237,6 @@ def search_customer():
         if not found:
             print("Customer not found.")
 
-    # Search by Name
     elif choice == "2":
         sname = input("Enter customer name: ")
         found = False
@@ -257,7 +247,6 @@ def search_customer():
         if not found:
             print("Customer not found.")
 
-    # Search by Contact
     elif choice == "3":
         scontact = input("Enter contact number: ")
         found = False

@@ -1,4 +1,3 @@
-# ui/sell_ui.py
 import os
 from datetime import datetime
 from PyQt6.QtWidgets import (
@@ -25,7 +24,6 @@ class SellTab(QWidget):
         main = QVBoxLayout(self)
         main.setSpacing(14)
 
-        # ---------------- Customer Section ----------------
         customer_layout = QHBoxLayout()
         self.customer_input = QLineEdit()
         self.customer_input.setPlaceholderText("Customer Name")
@@ -41,7 +39,6 @@ class SellTab(QWidget):
 
         main.addLayout(customer_layout)
 
-        # ---------------- Medicine Selector ----------------
         selector = QHBoxLayout()
 
         self.medicine_combo = QComboBox()
@@ -65,7 +62,6 @@ class SellTab(QWidget):
 
         main.addLayout(selector)
 
-        # ---------------- Cart Table ----------------
         self.table = QTableWidget()
         self.table.setColumnCount(5)
         self.table.setHorizontalHeaderLabels(
@@ -90,7 +86,6 @@ class SellTab(QWidget):
 
         main.addWidget(self.table)
 
-        # ---------------- Summary ----------------
         summary = QHBoxLayout()
         self.total_label = QLabel("Grand Total: Rs. 0")
         self.total_label.setStyleSheet("font-size:16px;font-weight:bold;")
@@ -106,7 +101,6 @@ class SellTab(QWidget):
 
         main.addLayout(summary)
 
-    # ---------------- Load Medicines ----------------
     def load_medicines(self):
         self.medicines = load_medicines()[1:]
         self.medicine_combo.clear()
@@ -124,7 +118,6 @@ class SellTab(QWidget):
             self.stock_label.setText(f"Stock: {med[3]}")
             self.qty_spin.setMaximum(int(med[3]))
 
-    # ---------------- Cart Logic ----------------
     def add_to_cart(self):
         med = self.medicine_combo.currentData()
         qty = self.qty_spin.value()
@@ -173,7 +166,6 @@ class SellTab(QWidget):
 
         self.total_label.setText(f"Grand Total: Rs. {grand}")
 
-    # ---------------- Checkout ----------------
     def complete_sale(self):
         customer = self.customer_input.text().strip()
 

@@ -10,7 +10,6 @@ from PyQt6.QtCore import Qt
 class CashierTab(QWidget):
     def __init__(self):
         super().__init__()
-        # Use the unified users.csv
         self.csv_file = os.path.join(os.path.dirname(__file__), "../dataset/users.csv")
         self.init_ui()
         self.ensure_csv_exists()
@@ -21,20 +20,17 @@ class CashierTab(QWidget):
         layout.setContentsMargins(14, 14, 14, 14)
         layout.setSpacing(12)
 
-        # Header
         header = QLabel("💼 Cashier Management")
         header.setAlignment(Qt.AlignmentFlag.AlignCenter)
         header.setStyleSheet("font-size: 18px; font-weight: bold; color: #2c3e50;")
         layout.addWidget(header)
 
-        # Table
         self.table = QTableWidget()
         self.table.setColumnCount(3)
         self.table.setHorizontalHeaderLabels(["Username", "Password", "Role"])
         self.table.horizontalHeader().setStretchLastSection(True)
         layout.addWidget(self.table, stretch=1)
 
-        # Add Cashier Form
         form_layout = QHBoxLayout()
         self.username_input = QLineEdit()
         self.username_input.setPlaceholderText("Username")
@@ -42,7 +38,7 @@ class CashierTab(QWidget):
         self.password_input.setPlaceholderText("Password")
         self.role_input = QLineEdit()
         self.role_input.setText("cashier")
-        self.role_input.setReadOnly(True)  # Role fixed as Cashier
+        self.role_input.setReadOnly(True)  
 
         add_btn = QPushButton("Add Cashier")
         add_btn.clicked.connect(self.add_cashier)
@@ -53,19 +49,16 @@ class CashierTab(QWidget):
         form_layout.addWidget(add_btn)
         layout.addLayout(form_layout)
 
-        # Delete Button
         del_btn = QPushButton("Delete Selected Cashier")
         del_btn.clicked.connect(self.delete_cashier)
         layout.addWidget(del_btn)
 
-    # Ensure CSV exists
     def ensure_csv_exists(self):
         if not os.path.exists(self.csv_file):
             with open(self.csv_file, "w", newline="", encoding="utf-8") as file:
                 writer = csv.DictWriter(file, fieldnames=["username", "password", "role"])
                 writer.writeheader()
 
-    # Load only cashiers
     def load_cashiers(self):
         self.table.setRowCount(0)
         if not os.path.exists(self.csv_file):
@@ -74,14 +67,13 @@ class CashierTab(QWidget):
             reader = csv.DictReader(file)
             for row in reader:
                 if row.get("role", "").lower() != "cashier":
-                    continue  # Only display cashiers
+                    continue  
                 row_pos = self.table.rowCount()
                 self.table.insertRow(row_pos)
                 self.table.setItem(row_pos, 0, QTableWidgetItem(row.get("username", "")))
                 self.table.setItem(row_pos, 1, QTableWidgetItem(row.get("password", "")))
                 self.table.setItem(row_pos, 2, QTableWidgetItem(row.get("role", "")))
 
-    # Add cashier
     def add_cashier(self):
         username = self.username_input.text().strip()
         password = self.password_input.text().strip()
@@ -91,7 +83,6 @@ class CashierTab(QWidget):
             QMessageBox.warning(self, "Input Error", "Username and Password are required!")
             return
 
-        # Check duplicates
         with open(self.csv_file, newline="", encoding="utf-8") as file:
             reader = csv.DictReader(file)
             for row in reader:
@@ -99,7 +90,6 @@ class CashierTab(QWidget):
                     QMessageBox.warning(self, "Duplicate", "Username already exists!")
                     return
 
-        # Append new cashier
         with open(self.csv_file, "a", newline="", encoding="utf-8") as file:
             writer = csv.DictWriter(file, fieldnames=["username", "password", "role"])
             writer.writerow({"username": username, "password": password, "role": role})
@@ -109,7 +99,6 @@ class CashierTab(QWidget):
         self.password_input.clear()
         self.load_cashiers()
 
-    # Delete cashier
     def delete_cashier(self):
         selected_rows = set(idx.row() for idx in self.table.selectedIndexes())
         if not selected_rows:
@@ -124,18 +113,15 @@ class CashierTab(QWidget):
         if confirm != QMessageBox.StandardButton.Yes:
             return
 
-        # Load all users
         users = []
         with open(self.csv_file, newline="", encoding="utf-8") as file:
             reader = csv.DictReader(file)
             for row in reader:
                 users.append(row)
 
-        # Remove selected cashiers
         usernames_to_delete = [self.table.item(r, 0).text() for r in selected_rows]
         users = [u for u in users if u.get("username") not in usernames_to_delete]
 
-        # Write back
         with open(self.csv_file, "w", newline="", encoding="utf-8") as file:
             writer = csv.DictWriter(file, fieldnames=["username", "password", "role"])
             writer.writeheader()

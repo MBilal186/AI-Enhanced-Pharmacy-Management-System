@@ -1,4 +1,3 @@
-# ui/medicine_ui.py
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem,
     QPushButton, QLineEdit, QMessageBox, QInputDialog
@@ -10,7 +9,6 @@ from utils.filehandler import read_csv, write_csv
 from datetime import datetime
 import os
 
-# -------------------- ROLE DECORATOR --------------------
 def require_role(allowed_roles):
     """
     Decorator to restrict access based on roles.
@@ -26,9 +24,8 @@ def require_role(allowed_roles):
         return wrapper
     return decorator
 
-# -------------------- MEDICINE TAB --------------------
 class MedicineTab(QWidget):
-    def __init__(self, role="customer"):  # default role
+    def __init__(self, role="customer"): 
         super().__init__()
         self.role = role.lower()
         self.init_ui()
@@ -36,7 +33,6 @@ class MedicineTab(QWidget):
     def init_ui(self):
         layout = QVBoxLayout()
 
-        # --- Search Bar ---
         search_layout = QHBoxLayout()
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Search medicine by name...")
@@ -50,7 +46,6 @@ class MedicineTab(QWidget):
         search_layout.addWidget(refresh_btn)
         layout.addLayout(search_layout)
 
-        # --- Table ---
         self.table = QTableWidget()
         self.table.setColumnCount(5)
         self.table.setHorizontalHeaderLabels(["ID", "Name", "Price", "Quantity", "Expiry"])
@@ -77,7 +72,6 @@ class MedicineTab(QWidget):
         """)
         layout.addWidget(self.table)
 
-        # --- Buttons ---
         btn_layout = QHBoxLayout()
         self.add_btn = QPushButton("Add")
         self.add_btn.clicked.connect(self.add_medicine_ui)
@@ -86,7 +80,6 @@ class MedicineTab(QWidget):
         self.delete_btn = QPushButton("Delete")
         self.delete_btn.clicked.connect(self.delete_medicine_ui)
 
-        # Removed old Sell button completely
         btn_layout.addWidget(self.add_btn)
         btn_layout.addWidget(self.update_btn)
         btn_layout.addWidget(self.delete_btn)
@@ -94,18 +87,16 @@ class MedicineTab(QWidget):
 
         self.setLayout(layout)
         self.load_table()
-        self.adjust_ui_for_role()  # Hide buttons based on role
+        self.adjust_ui_for_role()  
 
-    # -------------------- Role-Based UI --------------------
     def adjust_ui_for_role(self):
         if self.role == "customer":
             self.add_btn.hide()
             self.update_btn.hide()
             self.delete_btn.hide()
         elif self.role == "employee":
-            self.delete_btn.hide()  # employees cannot delete
+            self.delete_btn.hide()  
 
-    # -------------------- Table Load --------------------
     def load_table(self):
         self.table.setRowCount(0)
         self.medicines = load_medicines()
@@ -119,7 +110,6 @@ class MedicineTab(QWidget):
             for col_idx, val in enumerate([med_id, name, price, qty, expiry]):
                 self.table.setItem(row_idx, col_idx, QTableWidgetItem(val))
 
-            # Highlight expired or low stock
             expired = False
             try:
                 exp_date = datetime.strptime(expiry, "%Y-%m-%d")
@@ -137,7 +127,6 @@ class MedicineTab(QWidget):
                     cell.setBackground(Qt.GlobalColor.yellow)
                     cell.setForeground(Qt.GlobalColor.black)
 
-        # Alerts
         low_stock = [m for m in self.medicines if int(m[3]) < 10]
         expired_list = []
         for m in self.medicines:
@@ -157,7 +146,6 @@ class MedicineTab(QWidget):
         if msg:
             QMessageBox.warning(self, "Inventory Alerts", msg)
 
-    # -------------------- Search --------------------
     def search_medicine(self):
         keyword = self.search_input.text().lower()
         if not keyword:
@@ -171,7 +159,6 @@ class MedicineTab(QWidget):
                 for col_idx, item in enumerate(row):
                     self.table.setItem(row_index, col_idx, QTableWidgetItem(str(item)))
 
-    # -------------------- Add Medicine --------------------
     @require_role(["admin", "employee"])
     def add_medicine_ui(self, checked=False):
         data = load_medicines()
@@ -189,7 +176,6 @@ class MedicineTab(QWidget):
         QMessageBox.information(self, "Success", f"Medicine '{name}' added successfully!")
         self.load_table()
 
-    # -------------------- Update Medicine --------------------
     @require_role(["admin", "employee"])
     def update_medicine_ui(self, checked=False):
         selected = self.table.currentRow()
@@ -212,7 +198,6 @@ class MedicineTab(QWidget):
         QMessageBox.information(self, "Updated", f"Medicine '{row[1]}' updated successfully!")
         self.load_table()
 
-    # -------------------- Delete Medicine --------------------
     @require_role(["admin"])
     def delete_medicine_ui(self, checked=False):
         selected = self.table.currentRow()

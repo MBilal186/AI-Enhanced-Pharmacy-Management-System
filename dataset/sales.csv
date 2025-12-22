@@ -5,3 +5,7 @@ sale_id,customer_name,medicine_name,quantity,price,total,date
 1766223532,Muhammad Hassan,Allopurinol 100mg,10,430.0,4300.0,2025-12-20
 1766223532,Muhammad Hassan,Enalapril 5mg,5,300.0,1500.0,2025-12-20
 1766312365,Muhammad Hassan,Paracetamol 500mg,2,150.0,300.0,2025-12-21
+1766339933,Bilal,Paracetamol 500mg,5,150.0,750.0,2025-12-21
+1766339933,Bilal,Finasteride 5mg,2,1800.0,3600.0,2025-12-21
+1766340425,arham,Amoxicillin 250mg,3,480.0,1440.0,2025-12-21
+1766340425,arham,Paracetamol 500mg,2,150.0,300.0,2025-12-21

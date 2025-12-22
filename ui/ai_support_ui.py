@@ -1,4 +1,3 @@
-# ui/ai_support_ui.py
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout,
     QTextEdit, QLineEdit, QPushButton, QLabel
@@ -18,7 +17,6 @@ class AISupportTab(QWidget):
         layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(12)
 
-        # ---------- HEADER ----------
         header = QLabel("🤖 AI Support Chat")
         header.setAlignment(Qt.AlignmentFlag.AlignCenter)
         header.setStyleSheet("""
@@ -32,7 +30,6 @@ class AISupportTab(QWidget):
         """)
         layout.addWidget(header)
 
-        # ---------- CHAT AREA ----------
         self.chat_area = QTextEdit()
         self.chat_area.setReadOnly(True)
         self.chat_area.setStyleSheet("""
@@ -46,7 +43,6 @@ class AISupportTab(QWidget):
         """)
         layout.addWidget(self.chat_area, stretch=1)
 
-        # ---------- INPUT ----------
         input_layout = QHBoxLayout()
 
         self.input_box = QLineEdit()
@@ -86,7 +82,6 @@ class AISupportTab(QWidget):
         input_layout.addWidget(send_btn)
         layout.addLayout(input_layout)
 
-    # ---------- USER BUBBLE (RIGHT / YELLOW) ----------
     def user_bubble(self, message):
         self.chat_area.append(f"""
         <table width="100%" cellspacing="0" cellpadding="8">
@@ -112,7 +107,6 @@ class AISupportTab(QWidget):
         """)
         self.scroll()
 
-    # ---------- AI BUBBLE (LEFT / LIGHT BLUE) ----------
     def ai_bubble(self, message):
         self.chat_area.append(f"""
         <table width="100%" cellspacing="0" cellpadding="8">
@@ -138,7 +132,6 @@ class AISupportTab(QWidget):
         """)
         self.scroll()
 
-    # ---------- TYPING ----------
     def typing_indicator(self):
         self.chat_area.append("""
         <table width="100%" cellpadding="6">
@@ -163,7 +156,6 @@ class AISupportTab(QWidget):
     def scroll(self):
         self.chat_area.moveCursor(QTextCursor.MoveOperation.End)
 
-    # ---------- SEND ----------
     def send_message(self):
         msg = self.input_box.text().strip()
         if not msg:
@@ -175,13 +167,11 @@ class AISupportTab(QWidget):
 
         QTimer.singleShot(1200, lambda: self.ai_reply(msg))
 
-    # ---------- AI REPLY ----------
     def ai_reply(self, user_msg):
         self.remove_typing()
         reply = self.rule_based_ai(user_msg)
         self.ai_bubble(reply)
 
-    # ---------- MEDICAL RULE-BASED AI ----------
     def rule_based_ai(self, text):
         text = text.lower()
 

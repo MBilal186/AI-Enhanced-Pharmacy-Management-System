@@ -1,4 +1,3 @@
-# ui/startup_ui.py
 import sys, os, math, random
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -11,9 +10,6 @@ from PyQt6.QtCore import Qt, QTimer, QPointF
 
 from ui.login_ui import LoginWindow
 
-# -------------------------
-# Particle model
-# -------------------------
 class Particle:
     def __init__(self, w, h):
         self.x = random.uniform(0, w)
@@ -35,9 +31,6 @@ class Particle:
         if self.y < -border: self.y = h + border
         elif self.y > h + border: self.y = -border
 
-# -------------------------
-# Particle splash
-# -------------------------
 class ParticleSplash(QWidget):
     def __init__(self, parent=None, particle_count=90):
         super().__init__(parent)
@@ -129,9 +122,6 @@ class ParticleSplash(QWidget):
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawRect(self.rect())
 
-# -------------------------
-# Startup screen
-# -------------------------
 class StartupScreen(QWidget):
     def __init__(self):
         super().__init__()
@@ -200,9 +190,6 @@ class StartupScreen(QWidget):
         self.particles.stop()
         self.close()
 
-# -------------------------
-# Role selection screen
-# -------------------------
 class RoleSelectionScreen(QWidget):
     def __init__(self):
         super().__init__()
@@ -276,9 +263,6 @@ class RoleSelectionScreen(QWidget):
         self.login_window.show()
         self.close()
 
-# -------------------------
-# Run entrypoint
-# -------------------------
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     s = StartupScreen()

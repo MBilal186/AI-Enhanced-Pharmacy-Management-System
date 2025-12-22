@@ -48,9 +48,8 @@ class MainWindow(QMainWindow):
         btn_sales = QPushButton("💸 Sales History")
         btn_ai = QPushButton("🤖 AI Support")
         btn_cashier = QPushButton("👤 Cashiers")
-        btn_settings = QPushButton("⚙️ Settings")
 
-        self.sidebar_buttons = [btn_dashboard, btn_medicine, btn_sell, btn_sales, btn_ai, btn_cashier, btn_settings]
+        self.sidebar_buttons = [btn_dashboard, btn_medicine, btn_sell, btn_sales, btn_ai, btn_cashier]
         for btn in self.sidebar_buttons:
             btn.setCheckable(True)
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -108,9 +107,6 @@ class MainWindow(QMainWindow):
         btn_ai.clicked.connect(lambda: activate(btn_ai, 4))
         if self.role == "admin":
             btn_cashier.clicked.connect(lambda: activate(btn_cashier, 5))
-            btn_settings.clicked.connect(lambda: activate(btn_settings, 6))
-        else:
-            btn_settings.clicked.connect(lambda: activate(btn_settings, 5))
 
         # ---------------- Default tab ----------------
         if self.role == "admin":

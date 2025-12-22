@@ -1,4 +1,3 @@
-# ui/sales_ui.py
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QTableWidget,
     QTableWidgetItem, QPushButton
@@ -12,14 +11,13 @@ SALES_FILE = "dataset/sales.csv"
 class SalesHistoryTab(QWidget):
     def __init__(self):
         super().__init__()
-        self.setStyleSheet("background-color: #f4f6f9;")  # Page background
+        self.setStyleSheet("background-color: #f4f6f9;")  
         self.init_ui()
 
     def init_ui(self):
         layout = QVBoxLayout(self)
         layout.setSpacing(12)
 
-        # ---------- Table ----------
         self.table = QTableWidget()
         self.table.setColumnCount(7)
         self.table.setHorizontalHeaderLabels([

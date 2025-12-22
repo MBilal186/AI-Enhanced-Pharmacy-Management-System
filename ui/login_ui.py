@@ -1,4 +1,3 @@
-# ui/login_ui.py
 import sys, os, csv
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -53,7 +52,6 @@ class LoginWindow(QWidget):
         layout.setContentsMargins(28, 28, 28, 28)
         layout.setSpacing(14)
 
-        # ---------- Title ----------
         title = QLabel("Doctor Python")
         title.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -68,7 +66,6 @@ class LoginWindow(QWidget):
         layout.addWidget(subtitle)
         layout.addSpacing(20)
 
-        # ---------- Login fields ----------
         self.input_username = QLineEdit()
         self.input_username.setPlaceholderText("Username")
         self.input_password = QLineEdit()
@@ -84,7 +81,6 @@ class LoginWindow(QWidget):
         layout.addWidget(self.btn_login)
         layout.addSpacing(12)
 
-        # ---------- Continue as Customer ----------
         btn_customer = QPushButton("Continue as Customer")
         btn_customer.setStyleSheet("""
             QPushButton { background-color: #1abc9c; color: white; border-radius: 22px; padding: 12px; font-weight: 600; }
@@ -95,7 +91,6 @@ class LoginWindow(QWidget):
 
         layout.addStretch()
 
-    # ---------- Login ----------
     def handle_login(self):
         username = self.input_username.text().strip()
         password = self.input_password.text().strip()
@@ -107,14 +102,13 @@ class LoginWindow(QWidget):
         user_data = self.check_credentials(username, password)
 
         if user_data:
-            user_role = user_data["role"].lower()  # lowercase: admin / cashier
+            user_role = user_data["role"].lower()  
             self.main_window = MainWindow(role=user_role)
             self.main_window.show()
             self.close()
         else:
             QMessageBox.warning(self, "Login Failed", "Invalid credentials.")
 
-    # ---------- Check credentials ----------
     def check_credentials(self, username, password):
         csv_path = os.path.join(
             os.path.dirname(os.path.dirname(__file__)),
@@ -134,7 +128,6 @@ class LoginWindow(QWidget):
 
         return None
 
-    # ---------- Customer ----------
     def continue_as_customer(self):
         self.main_window = MainWindow(role="customer")
         self.main_window.show()

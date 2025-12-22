@@ -1,4 +1,3 @@
-# billing_functions.py
 from datetime import datetime
 from utils.filehandler import read_csv, write_csv
 from Medicine.medicine_functions import load_medicines, reduce_stock
@@ -32,13 +31,11 @@ def finalize_sale(customer_name, cart_items):
     if not cart_items:
         return False, "Cart is empty"
 
-    # 1Check stock availability FIRST
     for item in cart_items:
         success = reduce_stock(item["name"], int(item["qty"]))
         if not success:
             return False, f"Not enough stock for {item['name']}"
 
-    # 2️Load existing sales
     try:
         sales = read_csv(SALES_FILE)
     except FileNotFoundError:
@@ -49,7 +46,6 @@ def finalize_sale(customer_name, cart_items):
     sale_id = len(sales)
     date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # 3️Save each medicine as part of SAME bill
     for item in cart_items:
         total = float(item["price"]) * int(item["qty"])
         row = [
