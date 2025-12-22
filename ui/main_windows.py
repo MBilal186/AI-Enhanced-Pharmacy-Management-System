@@ -130,7 +130,7 @@ class MainWindow(QMainWindow):
                     self.sidebar_buttons[i].setEnabled(False)
         elif self.role == "customer":
             # Customer sees only Medicines
-            for i in [0, 2, 3, 4, 5, 6]:
+            for i in [0, 2, 3, 5, 6]:
                 self.tabs.setTabEnabled(i, False)
                 if i < len(self.sidebar_buttons):
                     self.sidebar_buttons[i].setEnabled(False)
